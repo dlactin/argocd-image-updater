@@ -310,8 +310,8 @@ func runImageUpdater(cfg *ImageUpdaterConfig, warmUp bool) (argocd.ImageUpdaterR
 				GitCommitUser:       cfg.GitCommitUser,
 				GitCommitEmail:      cfg.GitCommitMail,
 				GitCommitMessage:    cfg.GitCommitMessage,
-        GitCommitSigningKey: cfg.GitCommitSigningKey,
-        GitCommitSignOff:    cfg.GitCommitSignOff,
+				GitCommitSigningKey: cfg.GitCommitSigningKey,
+				GitCommitSignOff:    cfg.GitCommitSignOff,
 				DisableKubeEvents:   cfg.DisableKubeEvents,
 			}
 			res := argocd.UpdateApplication(upconf, syncState)

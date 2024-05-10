@@ -132,8 +132,6 @@ func (m *nativeGitClient) Config(username string, email string) error {
 
 // SigningConfig configures commit signing
 func (m *nativeGitClient) SigningConfig(signingkey string) error {
-  log.Warnf("OptionsConf: %v", signingkey)
-
   // Check if SiginingKey is a GPG key or Public SSH Key
   keyCheck, err := regexp.MatchString(".*pub$", signingkey)
   if err != nil {
