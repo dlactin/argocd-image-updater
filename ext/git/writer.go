@@ -2,6 +2,7 @@ package git
 
 import (
 	"fmt"
+	"regexp"
 	"strings"
 
 	"github.com/argoproj-labs/argocd-image-updater/pkg/log"
@@ -13,7 +14,7 @@ type CommitOptions struct {
 	CommitMessageText string
 	// CommitMessagePath holds the path to a file to be used for the commit message (-F option)
 	CommitMessagePath string
-	// SigningKey holds a GnuPG key ID used to sign the commit with (-S option)
+	// SigningKey holds a GnuPG key ID or path to Public SSH Key used to sign the commit with (-S option)
 	SigningKey string
 	// SignOff specifies whether to sign-off a commit (-s option)
 	SignOff bool
@@ -28,11 +29,36 @@ type CommitOptions struct {
 func (m *nativeGitClient) Commit(pathSpec string, opts *CommitOptions) error {
 	defaultCommitMsg := "Update parameters"
 	args := []string{"commit"}
+
+  log.Warnf("Debug Build - Dlactin")
+  log.Warnf("Options: %v", opts)
 	if pathSpec == "" || pathSpec == "*" {
 		args = append(args, "-a")
 	}
 	if opts.SigningKey != "" {
-		args = append(args, "-S", opts.SigningKey)
+		// Check if SiginingKey is a GPG key or Public SSH Key
+		keyCheck, err := regexp.MatchString(".*pub$", opts.SigningKey)
+		if err != nil {
+			return fmt.Errorf("could not validate Signing Key as GPG or Public SSH Key: %v", err)
+		}
+		if keyCheck {
+			// Setting the GPG format to ssh
+      log.Warnf("Setting GPG Format to SSH")
+			_, err = m.runCmd("config", "gpg.format", "ssh")
+			if err != nil {
+				return fmt.Errorf("could not set gpg format to ssh: %v", err)
+			}
+			// Setting Public SSH Key as our signing key
+			// SSH Keys can not currently be set via cli flag
+			_, err = m.runCmd("config", "user.signingkey", opts.SigningKey)
+			if err != nil {
+				return fmt.Errorf("could not set git signing key: %v", err)
+			}
+			args = append(args, "-S")
+		} else {
+      log.Warnf("Setting GPG Format to default")
+			args = append(args, "-S", opts.SigningKey)
+		}
 	}
 	if opts.SignOff {
 		args = append(args, "-s")
@@ -113,6 +139,33 @@ func (m *nativeGitClient) Config(username string, email string) error {
 	if err != nil {
 		return fmt.Errorf("could not set git email: %v", err)
 	}
+
+	return nil
+}
+
+// SigningConfig configures commit signing
+func (m *nativeGitClient) SigningConfig(signingkey string) error {
+  log.Warnf("OptionsConf: %v", signingkey)
+
+  // Check if SiginingKey is a GPG key or Public SSH Key
+  keyCheck, err := regexp.MatchString(".*pub$", signingkey)
+  if err != nil {
+    return fmt.Errorf("could not validate Signing Key as GPG or Public SSH Key: %v", err)
+  }
+  if keyCheck {
+    // Setting the GPG format to ssh
+    log.Warnf("Setting GPG Format to SSH")
+    _, err = m.runCmd("config", "gpg.format", "ssh")
+    if err != nil {
+      return fmt.Errorf("could not set gpg format to ssh: %v", err)
+    }
+    // Setting Public SSH Key as our signing key
+    // SSH Keys can not currently be set via cli flag
+    _, err = m.runCmd("config", "user.signingkey", opts.SigningKey)
+    if err != nil {
+      return fmt.Errorf("could not set git signing key: %v", err)
+    }
+  }
 
 	return nil
 }
