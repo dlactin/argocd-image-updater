@@ -29,9 +29,6 @@ type CommitOptions struct {
 func (m *nativeGitClient) Commit(pathSpec string, opts *CommitOptions) error {
 	defaultCommitMsg := "Update parameters"
 	args := []string{"commit"}
-
-  log.Warnf("Debug Build - Dlactin")
-  log.Warnf("Options: %v", opts)
 	if pathSpec == "" || pathSpec == "*" {
 		args = append(args, "-a")
 	}
@@ -130,7 +127,7 @@ func (m *nativeGitClient) Config(username string, email string) error {
 	return nil
 }
 
-// SigningConfig configures commit signing
+// SigningConfig configures commit signing for the repository
 func (m *nativeGitClient) SigningConfig(signingkey string) error {
   // Check if SiginingKey is a GPG key or Public SSH Key
   keyCheck, err := regexp.MatchString(".*pub$", signingkey)
@@ -152,5 +149,5 @@ func (m *nativeGitClient) SigningConfig(signingkey string) error {
     }
   }
 
-	return nil
+  return nil
 }
