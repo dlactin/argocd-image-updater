@@ -42,21 +42,8 @@ func (m *nativeGitClient) Commit(pathSpec string, opts *CommitOptions) error {
 			return fmt.Errorf("could not validate Signing Key as GPG or Public SSH Key: %v", err)
 		}
 		if keyCheck {
-			// Setting the GPG format to ssh
-      log.Warnf("Setting GPG Format to SSH")
-			_, err = m.runCmd("config", "gpg.format", "ssh")
-			if err != nil {
-				return fmt.Errorf("could not set gpg format to ssh: %v", err)
-			}
-			// Setting Public SSH Key as our signing key
-			// SSH Keys can not currently be set via cli flag
-			_, err = m.runCmd("config", "user.signingkey", opts.SigningKey)
-			if err != nil {
-				return fmt.Errorf("could not set git signing key: %v", err)
-			}
 			args = append(args, "-S")
 		} else {
-      log.Warnf("Setting GPG Format to default")
 			args = append(args, "-S", opts.SigningKey)
 		}
 	}
@@ -161,7 +148,7 @@ func (m *nativeGitClient) SigningConfig(signingkey string) error {
     }
     // Setting Public SSH Key as our signing key
     // SSH Keys can not currently be set via cli flag
-    _, err = m.runCmd("config", "user.signingkey", opts.SigningKey)
+    _, err = m.runCmd("config", "user.signingkey", signingkey)
     if err != nil {
       return fmt.Errorf("could not set git signing key: %v", err)
     }

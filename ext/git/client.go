@@ -68,7 +68,8 @@ type Client interface {
 	Push(remote string, branch string, force bool) error
 	Add(path string) error
 	SymRefToBranch(symRef string) (string, error)
-	Config(username string, email string, opts *CommitOptions) error
+	Config(username string, email string) error
+	SigningConfig(signingkey string) error
 }
 
 type EventHandlers struct {
